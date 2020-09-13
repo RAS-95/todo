@@ -1,50 +1,66 @@
 <?php 
     include('config.php');
 // print_r($_POST);
-    if(isset($_POST['submit']) && !isset($_GET['id']))
+    $row = array(
+        'caption' => 'Create',
+        'task' => '',
+        'creation_date' => ''
+    );
+    if(isset($_POST['submit']))
     {
-        $task= $_POST['task'];
-        $date = $_POST['date'];
-    
-        $send_q = "INSERT INTO todo(task,creation_date) VALUES('$task','$date')";
-    
-        $send = mysqli_query($connection,$send_q);
-        if(!$send)
+        if(!isset($_GET['id']))
         {
-              echo "sorry! Not created <br>".mysqli_error($connection);
-    
+            $task= $_POST['task'];
+            $date = $_POST['date'];
+        
+            $send_q = "INSERT INTO todo(task,creation_date) VALUES('$task','$date')";
+            
+            $send = mysqli_query($connection,$send_q);
+            if(!$send)
+            {
+                  echo "sorry! Not created <br>".mysqli_error($connection);
+            }
+            else
+            {
+                echo "<div class='alert alert-success'>Congrats! Your task is created!</div>";
+            }
         }
         else
         {
-            echo "Congrats!Your task is created!";
+            // print_r($_POST);
+            $id = $_GET['id'];
+            $sql = "SELECT * FROM todo WHERE id='$id'";
+            $row = mysqli_fetch_assoc(mysqli_query($connection, $sql));
+            $row['caption'] = 'Update';
+
+            $task= $_POST['task'];
+            $date = $_POST['date'];
+            $id = $_GET['id'];
+            $send_q = "UPDATE todo SET task='$task', creation_date='$date' WHERE id=$id";
+        
+            $send = mysqli_query($connection,$send_q);
+            if(!$send)
+            {
+                  echo "sorry! Not updated <br>".mysqli_error($connection);
+        
+            }
+            else
+            {
+                echo "<div class='alert alert-success'>Congrats! Your task is updated!</div>";
+            }
+            $id = $_GET['id'];
+            $sql = "SELECT * FROM todo WHERE id='$id'";
+            $row = mysqli_fetch_assoc(mysqli_query($connection, $sql));
+            $row['caption'] = 'Update';
         }
-    }else if(isset($_GET['id']) && !isset($_POST['submit']))
+    
+    }else if(isset($_GET['id']))
     {
         $id = $_GET['id'];
         $sql = "SELECT * FROM todo WHERE id='$id'";
         $row = mysqli_fetch_assoc(mysqli_query($connection, $sql));
-    }else if(isset($_GET['id']) && isset($_POST['submit']))
-    {
-        $task= $_POST['task'];
-        $date = $_POST['date'];
-        $id = $_GET['id'];
-        $send_q = "UPDATE todo SET task='$task' AND creation_date='$date' WHERE id='$id'";
-    
-        $send = mysqli_query($connection,$send_q);
-        if(!$send)
-        {
-              echo "sorry! Not updated <br>".mysqli_error($connection);
-    
-        }
-        else
-        {
-            echo "Congrats!Your task is updated!";
-        }
+        $row['caption'] = 'Update';
     }
-
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -52,7 +68,7 @@
 <head> 
 <link rel ="stylesheet" type = "text/css" href ="css/style.css">
 <link rel ="stylesheet" type = "text/css" href ="css/bootstrap.css">
-<title> RAS-todo app |<?php if(isset($_GET['id']) && !isset($_POST['submit'])){ echo 'Update task'; }else{echo 'Create Task';}?></title> 
+<title> RAS-todo app |<?php $row['caption'];?></title> 
 </head>
 
 <body> 
@@ -63,25 +79,19 @@
         <p class = "text-center m-4"> <b>Make & edit your daily routine here!</b></p>
      <div class ="container">
        
-     <h3 class ="text-center text-dark mt-5"><?php if(isset($_GET['id']) && !isset($_POST['submit'])){ echo 'Update your task'; }else{echo 'Create New Task';}?></h3>
+     <h3 class ="text-center text-dark mt-5"><?php echo $row['caption'];?> Your Task</h3>
      <form method ="POST">
           <div class ="form-group">
 
           <label for ="task">Task </label>
-          <textarea class ="form-control" name = "task"><?php 
-            if(isset($_GET['id']))
-            {
-                echo $row['task'];
-            }
-          ?>
-          </textarea>
+          <textarea class ="form-control" name = "task"><?php  echo $row['task'];?></textarea>
           </div>
           
           <div class ="form-group">
               <label for ="date">Creation Date</label>
-              <input type ="date" class ="form-control" name ="date" value="<?php if(isset($_GET['id']) && !isset($_POST['submit'])){ echo $row['creation_date'];}?>">
+              <input type ="date" class ="form-control" name ="date" value="<?php echo $row['creation_date']; ?>">
           </div>
-          <input type="submit" class ="btn btn-lg btn-success mt-4"  value="<?php if(isset($_GET['id']) && !isset($_POST['submit'])){ echo 'Update'; }else{echo 'Create Task';}?>" name="submit"/>
+          <input type="submit" class ="btn btn-lg btn-success mt-4"  value="<?php echo $row['caption']; ?>" name="submit"/>
      </form>
 
 
